@@ -4,6 +4,23 @@
       <script type="text/javascript" src="javascript/jquery-1.7.2.min.js"></script>
       <script type="text/javascript" src="javascript/config.js"></script>
       <script type="text/javascript">
+         $(document).ready(function() {
+               window.channel = "";
+               window.number_time_out = null;
+ 
+               showChannel();
+         });
+         
+         function showChannel() {
+            jQuery.getJSON(window.remotecontrol_url + "?command=get_channel", function(data) {
+                  $('#channel').html("<h1>"+ data.channel + "</h1>");
+                  });
+         }
+
+         function getChannel() {
+            return jQuery.getJSON(window.remotecontrol_url + "?command=get_channel");
+         }
+
          function pressKey(key) {
             jQuery.ajax(window.remotecontrol_url + "?command=key " + key);
          }
@@ -12,8 +29,23 @@
             jQuery.ajax(window.remotecontrol_url + "?reset=true");
          }
 
-         function pressNumber(number) {
+         function pressNumber(number) { 
+            clearTimeout(window.number_time_out);
+            window.channel = window.channel + number.toString();
+            $('#channel').html("<h1>" + window.channel + "</h1>");
+            window.number_time_out = setTimeout(function() {pressEnter();}, 2000);  
+         }
 
+         function pressEnter() {
+            clearTimeout(window.number_time_out);
+            jQuery.ajax(window.remotecontrol_url + "?command=" + window.channel);
+            window.channel = "";
+            setTimeout(function(){showChannel();}, 2000);
+         }
+
+         function clearChannel() {
+            clearTimeout(window.number_time_out);
+            window.channel = "";
          }
       </script>
    </head>
@@ -40,8 +72,25 @@
                <area shape="poly" alt="down" coords="192,152,136,176,75,152,101,129,133,141,169,129" href="#" onclick='pressKey("down");'/>
                <area shape="poly" alt="left" coords="71,146,50,88,74,28,95,58,83,89,96,124" href="#" onclick='pressKey("left");'/>
             </map>
-            <img src="images/remoteBottom.png" style="display:block">
+            <img src="images/remoteBottom.png" style="display:block" usemap="remoteBottomMap">
+            <map id="remoteBottomMap" name="remoteBottomMap">
+               <area shape="rect" alt="one"   coords="29,10,83,47"     href="#" onclick='pressNumber(1);'/>
+               <area shape="rect" alt="two"   coords="92,10,148,48"    href="#" onclick='pressNumber(2);'/>
+               <area shape="rect" alt="three" coords="159,10,216,47"   href="#" onclick='pressNumber(3);'/>
+               <area shape="rect" alt="four"  coords="28,57,84,95"     href="#" onclick='pressNumber(4);'/>
+               <area shape="rect" alt="five"  coords="93,57,149,96"    href="#" onclick='pressNumber(5);'/>
+               <area shape="rect" alt="six"   coords="159,58,214,95"   href="#" onclick='pressNumber(6);'/>
+               <area shape="rect" alt="seven" coords="29,106,84,144"   href="#" onclick='pressNumber(7);'/>
+               <area shape="rect" alt="eight" coords="94,106,148,143"  href="#" onclick='pressNumber(8);'/>
+               <area shape="rect" alt="nine"  coords="158,106,214,143" href="#" onclick='pressNumber(9);'/>
+               <area shape="rect" alt="zero"  coords="93,153,148,192"  href="#" onclick='pressNumber(0);'/>
+               <area shape="rect" alt="enter" coords="158,153,215,192" href="#" onclick='pressEnter();'/>
+               <area shape="rect" alt="dash"  coords="28,154,84,192"   href="#" onclick='clearDash();'/>
+            </map>
          </div>
-         <video width=720 height=405 src="mystream.m3u8" autoplay controls ></video>
+         <video width=720 height=405 src="mystream.m3u8" controls ></video> 
+         <div id="channel" style="float:right;color:white;width:720;margin-right:auto;margin-left:auto;">
+            <h1></h1>
+         </div>
    </body>
 </html>
